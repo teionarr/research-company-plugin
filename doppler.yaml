@@ -1,0 +1,17 @@
+# Doppler project/config linkage for this repo.
+#
+# This file is SAFE TO COMMIT — it contains no secrets, only the project + config name
+# the local CLI should bind to. Actual secret values live in Doppler's cloud, accessed
+# at runtime via `doppler run`.
+#
+# To use:
+#   1. Install: brew install dopplerhq/cli/doppler
+#   2. Authenticate: doppler login
+#   3. Bind this directory: doppler setup --project research-company-ecosystem --config dev
+#   4. Run: doppler run -- <command>   (or use bin/cc-research wrapper)
+#
+# In production / CI, set DOPPLER_TOKEN to a service token instead of running `doppler login`.
+
+setup:
+  project: research-company-ecosystem
+  config: dev
