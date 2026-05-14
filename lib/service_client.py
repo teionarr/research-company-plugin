@@ -86,41 +86,44 @@ class ServiceClient:
         self._reachable = None
 
     # ---- Public typed wrappers ----
+    #
+    # Each method maps 1:1 to a kitchen route. Methods return the kitchen's response
+    # dict on success, or None if the kitchen is unreachable / errored. None is the
+    # signal to fall back to direct MCP/API calls.
+    #
+    # Routes that don't exist in today's kitchen (discover, domain, briefs) are NOT
+    # wrapped here. They'd just 404; callers should not depend on them.
 
-    def discover(self, company: str, *, focus: str = "") -> dict[str, Any] | None:
-        """Run the discovery pass server-side. Returns SHARED_FACTS dict, or None if unavailable."""
+    def search(self, query: str, *, limit: int = 5) -> dict[str, Any] | None:
+        """Semantic web search → ranked results (title, url, snippet, published_at)."""
         return self._post(
-            "/discover",
-            payload={"company": company, "focus": focus},
-            cache_namespace="service.discover",
+            "/search",
+            payload={"query": query, "limit": limit},
+            cache_namespace="service.search",
             cache_ttl_kind="fact",
         )
 
-    def domain(
-        self,
-        slug: str,
-        company: str,
-        focus: str,
-        shared_facts: dict[str, Any],
-    ) -> dict[str, Any] | None:
-        """Run a single domain expert server-side. Slow path (uses domain timeout)."""
+    def scrape(self, url: str) -> dict[str, Any] | None:
+        """Fetch a single URL → cleaned markdown + title."""
         return self._post(
-            f"/domain/{slug}",
-            payload={"company": company, "focus": focus, "shared_facts": shared_facts},
-            cache_namespace=f"service.domain.{slug}",
+            "/scrape",
+            payload={"url": url},
+            cache_namespace="service.scrape",
             cache_ttl_kind="fact",
-            timeout=DOMAIN_TIMEOUT_S,
+            timeout=DOMAIN_TIMEOUT_S,  # scraping can be slow for JS-rendered pages
         )
 
-    def traffic(self, company: str, *, primary_url: str | None = None) -> dict[str, Any] | None:
+    def traffic(self, domain: str) -> dict[str, Any] | None:
+        """Traffic & demand signal for a domain → top_keywords, growth_indicator."""
         return self._post(
             "/traffic",
-            payload={"company": company, "primary_url": primary_url},
+            payload={"domain": domain},
             cache_namespace="service.traffic",
             cache_ttl_kind="fact",
         )
 
     def funding(self, company: str) -> dict[str, Any] | None:
+        """Funding signal — SEC filings + (when wired) Crunchbase rounds."""
         return self._post(
             "/funding",
             payload={"company": company},
@@ -129,33 +132,25 @@ class ServiceClient:
         )
 
     def people(self, company: str) -> dict[str, Any] | None:
+        """People signal — headcount + basic org facts."""
         return self._post(
             "/people",
             payload={"company": company},
             cache_namespace="service.people",
-            cache_ttl_kind="fact",
-        )
-
-    def tech(self, primary_url: str) -> dict[str, Any] | None:
-        return self._post(
-            "/tech",
-            payload={"primary_url": primary_url},
-            cache_namespace="service.tech",
             cache_ttl_kind="static",
         )
 
-    def upload_brief(self, html: str, slug: str) -> str | None:
-        """Upload an HTML brief; returns the public URL (briefs.<your-domain>/<slug>.html) or None."""
-        result = self._post(
-            "/briefs",
-            payload={"slug": slug, "html": html},
-            cache_namespace=None,  # never cache brief uploads
-            cache_ttl_kind="fact",
+    def tech(self, primary_url: str, *, company: str | None = None) -> dict[str, Any] | None:
+        """Tech stack fingerprinting for a URL."""
+        payload: dict[str, Any] = {"primary_url": primary_url}
+        if company:
+            payload["company"] = company
+        return self._post(
+            "/tech",
+            payload=payload,
+            cache_namespace="service.tech",
+            cache_ttl_kind="static",
         )
-        if result and isinstance(result, dict):
-            url = result.get("url")
-            return url if isinstance(url, str) else None
-        return None
 
     def verify(
         self,
