@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# cc-research — convenience wrapper that launches Claude Code with all secrets
+# injected by Doppler (when configured).
+#
+# Usage:
+#   cc-research                  # opens Claude Code with research-company secrets in env
+#   cc-research /research-company "Stripe" "applying for PM"
+#
+# Behavior:
+#   - If `doppler` is on PATH AND a doppler config is set up in $PWD (via `doppler setup`),
+#     execs `doppler run -- claude $@` so MCP servers and scripts see the configured secrets.
+#   - Otherwise, execs `claude $@` directly. Secrets are expected to come from the user's
+#     shell environment (export VAR=...). No .env files are read.
+#
+# This wrapper is a convenience, not a requirement — `claude` works without it. The
+# wrapper exists so users don't have to remember `doppler run --` every time.
+
+set -euo pipefail
+
+if ! command -v claude >/dev/null 2>&1; then
+    echo "cc-research: 'claude' (Claude Code CLI) is not installed or not on PATH." >&2
+    echo "  Install: https://docs.claude.com/claude-code" >&2
+    exit 127
+fi
+
+if command -v doppler >/dev/null 2>&1 && doppler configure get project >/dev/null 2>&1; then
+    # Doppler is configured for this directory — inject secrets at process start.
+    exec doppler run --silent-exit -- claude "$@"
+else
+    if [[ "${RESEARCH_COMPANY_DEBUG:-0}" = "1" ]]; then
+        echo "cc-research: Doppler not configured for this directory; running claude with shell env only." >&2
+        echo "  To enable Doppler:" >&2
+        echo "    doppler login" >&2
+        echo "    doppler setup --project research-company-ecosystem --config dev" >&2
+    fi
+    exec claude "$@"
+fi
