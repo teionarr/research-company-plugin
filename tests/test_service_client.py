@@ -69,13 +69,13 @@ def client(cache: Cache) -> sc.ServiceClient:
 def test_no_url_means_unavailable(cache: Cache) -> None:
     c = sc.ServiceClient(base_url=None, bearer_token=None, cache=cache)
     assert c.is_available() is False
-    assert c.discover("Stripe") is None
+    assert c.funding("Stripe") is None
 
 
 def test_url_set_but_unreachable_returns_none(client: sc.ServiceClient) -> None:
     with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("connection refused")):
         assert client.is_available() is False
-        assert client.discover("Stripe") is None
+        assert client.funding("Stripe") is None
 
 
 def test_reachability_is_memoized(client: sc.ServiceClient) -> None:
@@ -107,7 +107,7 @@ def test_bearer_token_sent_when_present(client: sc.ServiceClient) -> None:
 
     with patch("urllib.request.urlopen", side_effect=fake_urlopen):
         client.is_available()  # primes reachability
-        client.discover("Stripe")
+        client.funding("Stripe")
     # Header keys are normalized to title case by urllib
     assert captured["headers"].get("Authorization") == "Bearer t-secret"
     assert captured["headers"].get("X-skill-id") == "research-company"
@@ -129,9 +129,9 @@ def test_health_probe_skips_auth(client: sc.ServiceClient) -> None:
 
 
 def test_cache_hit_skips_http(client: sc.ServiceClient, cache: Cache) -> None:
-    cache.set("service.discover", {"company": "Stripe", "focus": ""}, {"facts": "cached"}, ttl_kind="fact")
+    cache.set("service.funding", {"company": "Stripe"}, {"facts": "cached"}, ttl_kind="fact")
     with patch("urllib.request.urlopen") as mock_open:
-        result = client.discover("Stripe")
+        result = client.funding("Stripe")
     assert result == {"facts": "cached"}
     mock_open.assert_not_called()
 
@@ -140,17 +140,19 @@ def test_response_is_cached_after_success(client: sc.ServiceClient, cache: Cache
     with patch("urllib.request.urlopen", return_value=_ok({"facts": "fresh"})):
         client.is_available()  # primes reachability separately
     with patch("urllib.request.urlopen", return_value=_ok({"facts": "fresh"})):
-        client.discover("Stripe")
-    assert cache.get("service.discover", {"company": "Stripe", "focus": ""}) == {"facts": "fresh"}
+        client.funding("Stripe")
+    assert cache.get("service.funding", {"company": "Stripe"}) == {"facts": "fresh"}
 
 
-def test_brief_upload_is_never_cached(client: sc.ServiceClient, cache: Cache) -> None:
-    with patch("urllib.request.urlopen", return_value=_ok({"url": "https://briefs.example.com/x.html"})):
+def test_verify_is_never_cached(client: sc.ServiceClient, cache: Cache) -> None:
+    """/verify is intentionally uncached — URL liveness changes minute-to-minute."""
+    with patch("urllib.request.urlopen", return_value=_ok({"ok": True})):
         client.is_available()
-    with patch("urllib.request.urlopen", return_value=_ok({"url": "https://briefs.example.com/x.html"})):
-        url = client.upload_brief("<html/>", "stripe-2026-05-14")
-    assert url == "https://briefs.example.com/x.html"
-    # Cache should be empty — uploads aren't cached
+    with patch(
+        "urllib.request.urlopen",
+        return_value=_ok({"verifications": [], "cross_domain_contradictions": [], "summary": {}}),
+    ):
+        client.verify([{"id": "x"}], target_domain="example.com")
     assert cache.stats()["entries"] == 0
 
 
@@ -166,11 +168,11 @@ def test_5xx_retries_once_then_succeeds(client: sc.ServiceClient) -> None:
             raise r
         return r
 
-    # Prime reachability with a separate mock so retries on /discover are clean
+    # Prime reachability with a separate mock so retries on /funding are clean
     with patch("urllib.request.urlopen", return_value=_ok({"ok": True})):
         client.is_available()
     with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-        result = client.discover("Stripe")
+        result = client.funding("Stripe")
     assert result == {"facts": "second-try"}
     assert responses == []  # both consumed
 
@@ -179,7 +181,7 @@ def test_5xx_after_retry_returns_none(client: sc.ServiceClient) -> None:
     with patch("urllib.request.urlopen", return_value=_ok({"ok": True})):
         client.is_available()
     with patch("urllib.request.urlopen", side_effect=_http_err(502)):
-        assert client.discover("Stripe") is None
+        assert client.funding("Stripe") is None
 
 
 def test_4xx_does_not_retry(client: sc.ServiceClient) -> None:
@@ -193,7 +195,7 @@ def test_4xx_does_not_retry(client: sc.ServiceClient) -> None:
         raise _http_err(401)
 
     with patch("urllib.request.urlopen", side_effect=counting):
-        assert client.discover("Stripe") is None
+        assert client.funding("Stripe") is None
     assert call_count == 1  # no retry on 4xx
 
 
@@ -202,7 +204,7 @@ def test_timeout_returns_none_and_degrades_reachability(client: sc.ServiceClient
         client.is_available()
     assert client._reachable is True
     with patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
-        assert client.discover("Stripe") is None
+        assert client.funding("Stripe") is None
     # Connection-level failures mark service unreachable so subsequent calls don't waste time
     assert client._reachable is False
 
@@ -227,12 +229,45 @@ def test_typed_wrappers_use_correct_paths(client: sc.ServiceClient) -> None:
 
     with patch("urllib.request.urlopen", side_effect=fake_urlopen):
         client.is_available()
-        client.discover("X")
-        client.traffic("X")
+        client.search("query")
+        client.scrape("https://x.com")
+        client.traffic("x.com")
         client.funding("X")
         client.people("X")
         client.tech("https://x.com")
-        client.domain("sales", "X", "", {"primary_url": "https://x.com"})
+        client.verify([{"id": "y"}])
 
     # First call is /health, then the typed wrappers
-    assert captured_paths == ["/health", "/discover", "/traffic", "/funding", "/people", "/tech", "/domain/sales"]
+    assert captured_paths == ["/health", "/search", "/scrape", "/traffic", "/funding", "/people", "/tech", "/verify"]
+
+
+def test_search_passes_query_and_limit(client: sc.ServiceClient) -> None:
+    captured: dict = {}
+
+    def fake_urlopen(req, timeout=None):
+        captured["body"] = req.data
+        return _ok({"results": []})
+
+    with patch("urllib.request.urlopen", return_value=_ok({"ok": True})):
+        client.is_available()
+    with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+        client.search("Stripe overview", limit=10)
+    body = json.loads(captured["body"].decode())
+    assert body["query"] == "Stripe overview"
+    assert body["limit"] == 10
+
+
+def test_traffic_sends_domain_not_company(client: sc.ServiceClient) -> None:
+    captured: dict = {}
+
+    def fake_urlopen(req, timeout=None):
+        captured["body"] = req.data
+        return _ok({"top_keywords": []})
+
+    with patch("urllib.request.urlopen", return_value=_ok({"ok": True})):
+        client.is_available()
+    with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+        client.traffic("stripe.com")
+    body = json.loads(captured["body"].decode())
+    assert body == {"domain": "stripe.com"}
+    assert "company" not in body  # the kitchen wants `domain`, not `company`
