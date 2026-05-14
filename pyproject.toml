@@ -1,0 +1,45 @@
+[project]
+name = "research-company-plugin"
+version = "0.1.0"
+description = "Claude Code plugin: deep, verified company research → HTML brief"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Oren Levitin" }]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+    "ruff==0.6.9",
+]
+
+# This plugin is not a python package — it's a directory of agent files,
+# prompts, and standalone Python scripts in lib/. Tell setuptools not
+# to look for packages so `pip install -e '.[dev]'` succeeds.
+[tool.setuptools]
+packages = []
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["node_modules", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",  # pycodestyle / pyflakes
+    "I",            # isort
+    "B",            # bugbear
+    "UP",           # pyupgrade
+    "S",            # bandit-style security
+    "RUF",
+]
+ignore = [
+    "S101",  # asserts allowed in tests
+    "E501",  # line length is enforced by formatter, not linter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"

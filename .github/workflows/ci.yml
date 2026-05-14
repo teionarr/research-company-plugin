@@ -1,0 +1,73 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff==0.6.9
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Validate JSON files
+        run: |
+          set -e
+          for f in $(find . -name '*.json' -not -path './node_modules/*' -not -path './.git/*'); do
+            python -m json.tool "$f" > /dev/null
+            echo "✓ $f"
+          done
+
+  schema:
+    runs-on: ubuntu-latest
+    name: schema
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate plugin.json has required fields
+        run: |
+          python <<'PY'
+          import json, sys
+          with open(".claude-plugin/plugin.json") as f:
+              p = json.load(f)
+          required = {"name", "description", "version", "author", "license"}
+          missing = required - p.keys()
+          if missing:
+              print(f"plugin.json missing required fields: {missing}", file=sys.stderr)
+              sys.exit(1)
+          assert p["name"] == "research-company", f"name must be 'research-company', got {p['name']!r}"
+          assert p["version"].count(".") == 2, f"version must be semver, got {p['version']!r}"
+          print(f"✓ plugin.json valid (v{p['version']})")
+          PY
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    name: gitleaks
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

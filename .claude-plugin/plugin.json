@@ -1,0 +1,9 @@
+{
+  "name": "research-company",
+  "description": "Deep company research for job candidates — 9 parallel domain experts (Market, Sales, Product, R&D/Tech, Traffic, People, Hiring, Customers, Money) produce a single HTML brief with verified, non-obvious insights you can use in an interview.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Oren Levitin"
+  },
+  "license": "MIT"
+}
