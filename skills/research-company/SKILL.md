@@ -20,12 +20,12 @@ If `company` is missing or ambiguous, ask once for clarification before proceedi
 
 ## Phase 1 — Pre-flight (5-10 seconds)
 
-1. Run `bash {{plugin_dir}}/lib/check_env.sh` (lands in PR-1.6) to discover:
+1. Run `bash {{plugin_dir}}/lib/check_env.sh` to discover:
    - `AVAILABLE_TOOLS` — comma-separated list of MCPs + APIs that are configured
-   - `RESEARCH_SERVICE_URL` — set if the backend service is reachable (Phase 2 of the broader rollout)
+   - `RESEARCH_SERVICE_URL` — set if the kitchen backend is reachable
    - `BRIEF_OUTPUT_DIR` — where to write the HTML (default `~/Documents/research-company-briefs/`)
-2. If both `RESEARCH_SERVICE_URL` is set AND service `/health` responds in <2s → **service mode** (cheaper, cached). Otherwise → **standalone mode** (direct MCP/API calls).
-3. Note which MCPs are missing and which signals will degrade. Don't error — just downgrade affected confidence levels later.
+2. If `AVAILABLE_TOOLS` contains the literal token `kitchen` → **service mode**. Domain experts should prefer `python {{plugin_dir}}/lib/kitchen_cli.py <subcmd>` for their research calls — kitchen responses are cached (24h facts / 7d static) and cost-tracked under the per-skill daily USD cap. Otherwise → **standalone mode**: experts use direct MCP/web tools.
+3. Note which MCPs / providers are missing and which signals will degrade. Don't error — just downgrade affected confidence levels later.
 
 ---
 
