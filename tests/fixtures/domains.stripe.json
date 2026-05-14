@@ -1,0 +1,188 @@
+[
+  {
+    "domain": "market",
+    "insights": [
+      {
+        "id": "market-1",
+        "tag": "strong",
+        "headline": "Category leader despite Adyen's recent enterprise wins",
+        "evidence": "Across 2025-2026 G2 segment data, Stripe still leads SMB and mid-market payments by margin >2x while Adyen leads enterprise. The two have stopped overlapping.",
+        "sources": [
+          {"title": "G2 payments-processing category", "url": "https://www.g2.com/categories/payment-processing"},
+          {"title": "Stripe homepage", "url": "https://stripe.com"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebSearch", "WebFetch"]
+      },
+      {
+        "id": "market-2",
+        "tag": "opening",
+        "headline": "Bridge acquisition (Oct 2024) is the bet on stablecoin rails",
+        "evidence": "Stripe acquired Bridge to own crypto-fiat conversion. The strategy: don't compete on stablecoins, route them.",
+        "sources": [
+          {"title": "Stripe acquires Bridge", "url": "https://stripe.com/newsroom/news/acquired-bridge"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebFetch"]
+      }
+    ],
+    "raw_facts": ["Founded 2010", "HQ South San Francisco + Dublin"],
+    "gaps": []
+  },
+  {
+    "domain": "sales",
+    "insights": [
+      {
+        "id": "sales-1",
+        "tag": "weak",
+        "headline": "Self-serve up to mid-tier; everything above is opaque",
+        "evidence": "Pricing page shows per-transaction up to standard plan; enterprise tier requires contact sales with no anchor pricing. Reviews mention long sales cycles for the larger deals.",
+        "sources": [
+          {"title": "Stripe pricing", "url": "https://stripe.com/pricing"}
+        ],
+        "confidence": "medium",
+        "tools_used": ["WebFetch"]
+      }
+    ],
+    "raw_facts": ["AE roles concentrated in NY, SF, Dublin"],
+    "gaps": ["could not confirm AE/SE ratio without LinkedIn API"]
+  },
+  {
+    "domain": "product",
+    "insights": [
+      {
+        "id": "product-1",
+        "tag": "fun",
+        "headline": "Sessions API launched last quarter — first new dev primitive in 18mo",
+        "evidence": "The Sessions API replaces multi-step Checkout/PaymentIntent dance for a flat session-based UX. First major surface change since 2024.",
+        "sources": [
+          {"title": "Stripe Sessions API docs", "url": "https://docs.stripe.com/api/sessions"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebFetch"]
+      },
+      {
+        "id": "product-2",
+        "tag": "opening",
+        "headline": "Issuing + Treasury increasingly co-positioned — embedded-finance push",
+        "evidence": "The /products page groups Issuing and Treasury under 'Banking-as-a-Service' for the first time. Prior org had them as separate pillars.",
+        "sources": [
+          {"title": "Stripe products", "url": "https://stripe.com/products"}
+        ],
+        "confidence": "medium",
+        "tools_used": ["WebFetch"]
+      }
+    ],
+    "raw_facts": ["Public API has 200+ endpoints"],
+    "gaps": []
+  },
+  {
+    "domain": "rd",
+    "insights": [
+      {
+        "id": "rd-1",
+        "tag": "fun",
+        "headline": "Engineering blog post 'Ruby at scale: 10 years of monolith pragmatism'",
+        "evidence": "Stripe wrote publicly about staying on Ruby/Rails through scale, with Sorbet type-checking as the layer that made it work. Counter-narrative to the microservices default.",
+        "sources": [
+          {"title": "Stripe Engineering blog", "url": "https://stripe.com/blog/engineering"}
+        ],
+        "confidence": "high",
+        "tools_used": ["mcp__firecrawl__firecrawl_scrape"]
+      }
+    ],
+    "raw_facts": ["Stack: Ruby/Rails + Sorbet, Go for some services"],
+    "gaps": ["Wappalyzer would give more frontend stack detail"]
+  },
+  {
+    "domain": "traffic",
+    "insights": [
+      {
+        "id": "traffic-1",
+        "tag": "strong",
+        "headline": "Owns the 'how to accept payments' SEO category outright",
+        "evidence": "Top 3 results for queries like 'how to accept credit cards online', 'payment gateway api', 'subscription billing setup' are Stripe docs / blog. They've made docs the funnel.",
+        "sources": [
+          {"title": "Google: how to accept payments", "url": "https://www.google.com/search?q=how+to+accept+payments"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebSearch"]
+      }
+    ],
+    "raw_facts": ["Docs estimated to drive >40% of new sign-ups (per Patrick Collison interview)"],
+    "gaps": []
+  },
+  {
+    "domain": "people",
+    "insights": [
+      {
+        "id": "people-1",
+        "tag": "opening",
+        "headline": "CFO Steffan Tomlinson joined from Confluent — IPO playbook in motion",
+        "evidence": "Tomlinson took Palo Alto Networks and Confluent public; joined Stripe Dec 2024. Pattern is unmistakable.",
+        "sources": [
+          {"title": "Stripe newsroom", "url": "https://stripe.com/newsroom/news/steffan-tomlinson"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebFetch", "WebSearch"]
+      }
+    ],
+    "raw_facts": ["Headcount estimated 8000+", "Co-founders Patrick + John Collison both still active"],
+    "gaps": []
+  },
+  {
+    "domain": "hiring",
+    "insights": [
+      {
+        "id": "hiring-1",
+        "tag": "weak",
+        "headline": "85% of open eng roles are L5+; almost no junior pipeline",
+        "evidence": "Careers filter: 47 senior/staff/principal roles, 8 mid, 0 junior or new-grad. At Stripe's headcount, this concentrates institutional knowledge in too few people.",
+        "sources": [
+          {"title": "Stripe careers — engineering", "url": "https://stripe.com/jobs/search?team=engineering"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebFetch"]
+      }
+    ],
+    "raw_facts": ["Open roles: 280+ across all functions"],
+    "gaps": []
+  },
+  {
+    "domain": "customers",
+    "insights": [
+      {
+        "id": "customers-1",
+        "tag": "contradiction",
+        "headline": "Logo wall shows F500; G2 segment skews 60% small business",
+        "evidence": "Homepage lists Amazon, Microsoft, Google, Salesforce. G2 reviewer segment data: 60% SMB, 28% mid-market, 12% enterprise. The enterprise wins are real but a minority of the actual reviewer base.",
+        "sources": [
+          {"title": "Stripe homepage", "url": "https://stripe.com"},
+          {"title": "G2 Stripe reviews", "url": "https://www.g2.com/products/stripe/reviews"}
+        ],
+        "confidence": "high",
+        "tools_used": ["WebFetch", "WebSearch"]
+      }
+    ],
+    "raw_facts": ["Logos: Amazon, Microsoft, Google, Salesforce, Shopify, OpenAI"],
+    "gaps": []
+  },
+  {
+    "domain": "money",
+    "insights": [
+      {
+        "id": "money-1",
+        "tag": "opening",
+        "headline": "$91.5B tender at $70B implied valuation — flat-to-up despite ZIRP unwind",
+        "evidence": "Per Reuters Feb 2025, secondary tender priced at ~$70B vs prior peak $95B. Flat valuation through a brutal correction; investors are repricing rather than fleeing.",
+        "sources": [
+          {"title": "Reuters Stripe tender", "url": "https://www.reuters.com"}
+        ],
+        "confidence": "medium",
+        "tools_used": ["WebSearch"]
+      }
+    ],
+    "raw_facts": ["Last raise: 2023 Series I, $6.5B at $50B valuation"],
+    "gaps": ["headcount estimate from Money domain (8500) differs from People (8000)"]
+  }
+]

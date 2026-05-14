@@ -2,7 +2,7 @@
 
 A Claude Code plugin that researches a company across 9 business domains in parallel — Market, Sales, Product, R&D/Tech, Traffic, People, Hiring, Customers, Money — and produces a single self-contained HTML brief with verified, non-obvious insights you can use in a job interview.
 
-> **Status: scaffold (v0.1.0).** The plugin manifest, CI, and dev workflow are in place. Functional slices land via PRs `feat/...` — see [the project plan](#project-plan).
+> **Status: v0.1.0 — first shippable release.** Plugin runs end-to-end in standalone mode (no API keys required beyond Anthropic). The kitchen service (shared backend on the VM with Redis cache + premium APIs + brief-host) is a future release. Multi-repo ecosystem split — this repo is the skill; the kitchen will live in its own repo.
 
 ## What it produces
 
@@ -15,16 +15,17 @@ A single HTML file with:
 - Verification badge per insight (`verified` / `inferred` / `unsupported`)
 - Cross-domain contradictions surfaced explicitly
 
-## Quick install (once functional slices land)
+## Quick install
 
 ```bash
-# Clone or install via Claude Code plugin manager
 git clone https://github.com/teionarr/research-company-plugin.git
 /plugin install ./research-company-plugin
 
 # Run
 /research-company "Stripe" "applying for product manager"
 ```
+
+The brief lands at `~/Documents/research-company-briefs/<slug>_<YYYY-MM-DD>.html` and opens in your browser.
 
 ## Setup
 
@@ -55,11 +56,22 @@ doppler run -- claude    # all API keys (when configured) injected automatically
 
 Paid upgrades (Perplexity, Crunchbase, Semrush, Apollo, Wappalyzer paid) are opt-in via one config flip — see [provider strategy](docs/CONTRIBUTING.md#provider-strategy).
 
-## Project plan
+## How it works
 
-See the canonical plan at [`docs/PLAN.md`](docs/PLAN.md) (lands in PR-1.2 alongside the prompts).
+1. **Pre-flight.** [`lib/check_env.sh`](lib/check_env.sh) probes which MCPs and API keys are configured; emits an `AVAILABLE_TOOLS` allowlist.
+2. **Discovery.** A quick homepage scrape + overview search builds `SHARED_FACTS` (URL, sector, headcount estimate, funding stage).
+3. **Parallel research.** 9 [`domain-expert`](agents/domain-expert.md) agents (one per domain) launched in parallel via the Task tool. Each is parameterized by an editable persona in [`prompts/experts/`](prompts/experts/) and returns strict JSON.
+4. **Synthesis + verification (parallel).** [`synthesis-agent`](agents/synthesis-agent.md) picks Top 5 with the must-include constraint (≥1 weak, ≥1 opening, ≥1 contradiction). [`verifier`](agents/verifier.md) re-fetches Top-5 sources to catch hallucinated citations.
+5. **Render.** [`lib/render_brief.py`](lib/render_brief.py) produces a single self-contained HTML file. No JavaScript, native `<details>/<summary>` collapsibles, prints cleanly to PDF.
+6. **Exit.** Final structured JSON on stdout (paperclip-compatible).
 
-The plugin is being built **PR-driven, one atomic slice at a time** — that's the point. Open PRs against `main` are gated by CI (lint, secret scan, schema validation).
+## The iteration surface
+
+The 9 expert prompts in [`prompts/experts/`](prompts/experts/) are the iteration surface. Edit any of them — `01-market.md`, `02-sales.md`, … — to tune what each "expert" looks for. No code change. Every run reads the latest file.
+
+## Dev workflow
+
+PR-driven against a protected `main` (CI gates: lint, schema, gitleaks, test). See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
 
 ## Prior art & credits
 
