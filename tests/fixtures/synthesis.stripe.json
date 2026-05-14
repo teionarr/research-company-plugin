@@ -1,0 +1,76 @@
+{
+  "top_5": [
+    {
+      "id": "people-1",
+      "tag": "opening",
+      "headline": "CFO Steffan Tomlinson joined from Confluent — IPO playbook in motion",
+      "evidence": "Tomlinson took Palo Alto Networks and Confluent public; joined Stripe Dec 2024.",
+      "sources": [{"title": "Stripe newsroom", "url": "https://stripe.com/newsroom/news/steffan-tomlinson"}],
+      "confidence": "high",
+      "domain": "people",
+      "selection_reason": "satisfies opening-tag constraint; specific and recent"
+    },
+    {
+      "id": "hiring-1",
+      "tag": "weak",
+      "headline": "85% of open eng roles are L5+; almost no junior pipeline",
+      "evidence": "Careers filter: 47 senior/staff/principal, 8 mid, 0 junior. At Stripe's headcount, this concentrates institutional knowledge in too few people.",
+      "sources": [{"title": "Stripe careers", "url": "https://stripe.com/jobs/search?team=engineering"}],
+      "confidence": "high",
+      "domain": "hiring",
+      "selection_reason": "satisfies weak-tag constraint; candidate could credibly offer to help"
+    },
+    {
+      "id": "customers-1",
+      "tag": "contradiction",
+      "headline": "Logo wall shows F500; G2 segment skews 60% small business",
+      "evidence": "Homepage lists Amazon, MSFT, Google, Salesforce. G2: 60% SMB, 28% MM, 12% ENT.",
+      "sources": [
+        {"title": "Stripe homepage", "url": "https://stripe.com"},
+        {"title": "G2 Stripe reviews", "url": "https://www.g2.com/products/stripe/reviews"}
+      ],
+      "confidence": "high",
+      "domain": "customers",
+      "selection_reason": "satisfies contradiction-tag constraint; surfaces enterprise-vs-SMB tension"
+    },
+    {
+      "id": "market-2",
+      "tag": "opening",
+      "headline": "Bridge acquisition (Oct 2024) is the bet on stablecoin rails",
+      "evidence": "Stripe acquired Bridge to own crypto-fiat conversion. Don't compete on stablecoins, route them.",
+      "sources": [{"title": "Stripe acquires Bridge", "url": "https://stripe.com/newsroom/news/acquired-bridge"}],
+      "confidence": "high",
+      "domain": "market",
+      "selection_reason": "high-leverage opener; recent and unambiguous"
+    },
+    {
+      "id": "rd-1",
+      "tag": "fun",
+      "headline": "Engineering blog post 'Ruby at scale: 10 years of monolith pragmatism'",
+      "evidence": "Stripe wrote publicly about staying on Rails + Sorbet through scale. Counter-narrative to microservices default.",
+      "sources": [{"title": "Stripe Engineering blog", "url": "https://stripe.com/blog/engineering"}],
+      "confidence": "high",
+      "domain": "rd",
+      "selection_reason": "memorable opener; rounds out the brief"
+    }
+  ],
+  "cross_domain_contradictions": [
+    {
+      "id": "synthesis-contradiction-1",
+      "tag": "contradiction",
+      "headline": "Headcount: People says ~8000, Money says ~8500 (raw facts)",
+      "evidence": "Two domains' raw_facts disagree on company size. Money's source is a 2025 valuation report; People's is more recent LinkedIn-derived. Likely growth in the gap.",
+      "sources": [
+        {"title": "Stripe newsroom", "url": "https://stripe.com/newsroom/news/steffan-tomlinson"},
+        {"title": "Reuters Stripe tender", "url": "https://www.reuters.com"}
+      ],
+      "confidence": "medium"
+    }
+  ],
+  "constraint_check": {
+    "has_weak": true,
+    "has_opening": true,
+    "has_contradiction": true,
+    "notes": "All three required tags present in Top 5"
+  }
+}

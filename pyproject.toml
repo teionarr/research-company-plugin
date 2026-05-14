@@ -38,7 +38,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "S105", "S106"]
+# Tests can use asserts, hard-coded "secrets" in fixtures, and subprocess calls
+# with hard-coded interpreter paths.
+"tests/*" = ["S101", "S105", "S106", "S603", "S607"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

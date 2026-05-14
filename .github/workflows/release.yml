@@ -1,0 +1,91 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write  # needed to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # full history for changelog generation
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dev deps
+        run: pip install -e '.[dev]'
+
+      - name: Lint + test before releasing
+        run: |
+          ruff check .
+          ruff format --check .
+          pytest -q
+
+      - name: Verify tag matches plugin.json version
+        run: |
+          python <<'PY'
+          import json, os, sys
+          tag = os.environ["GITHUB_REF_NAME"]  # e.g. v0.1.0
+          plugin_version = json.load(open(".claude-plugin/plugin.json"))["version"]
+          if tag.lstrip("v") != plugin_version:
+              print(f"tag {tag} does not match plugin.json version {plugin_version}", file=sys.stderr)
+              sys.exit(1)
+          print(f"✓ tag {tag} matches plugin.json (v{plugin_version})")
+          PY
+
+      - name: Generate changelog from commits since previous tag
+        id: changelog
+        run: |
+          set -e
+          prev_tag=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$prev_tag" ]; then
+            range="HEAD"
+            echo "first release — including all commits"
+          else
+            range="${prev_tag}..HEAD"
+            echo "changelog range: $range"
+          fi
+          {
+            echo "changelog<<EOF"
+            git log --pretty=format:"- %s (%h)" "$range"
+            echo
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: |
+            ## What's in this release
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Install
+
+            ```bash
+            git clone --branch ${{ github.ref_name }} https://github.com/teionarr/research-company-plugin.git
+            /plugin install ./research-company-plugin
+            ```
+
+            ## Verification
+
+            All CI gates green for this tag:
+            - lint + format (ruff)
+            - tests (pytest)
+            - schema validation
+            - secret scan (gitleaks)
+            - tag/version match check
+
+            See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for the full dev workflow.
+          draft: false
+          prerelease: false

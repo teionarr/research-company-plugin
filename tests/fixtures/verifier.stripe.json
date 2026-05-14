@@ -1,0 +1,58 @@
+{
+  "verifications": [
+    {
+      "insight_id": "people-1",
+      "verdict": "verified",
+      "evidence_quote": "Steffan Tomlinson, who previously served as CFO of Confluent and Palo Alto Networks, joined Stripe as CFO.",
+      "checked_url": "https://stripe.com/newsroom/news/steffan-tomlinson",
+      "page_was_reachable": true,
+      "notes": ""
+    },
+    {
+      "insight_id": "hiring-1",
+      "verdict": "inferred",
+      "evidence_quote": "Page lists 47 roles tagged Senior/Staff/Principal and 8 tagged mid-level when filtered to engineering.",
+      "checked_url": "https://stripe.com/jobs/search?team=engineering",
+      "page_was_reachable": true,
+      "notes": "Page contains the role counts; the '85%' framing and 'no junior pipeline' interpretation is the analyst's inference."
+    },
+    {
+      "insight_id": "customers-1",
+      "verdict": "verified",
+      "evidence_quote": "Customer logos: Amazon, Microsoft, Google, Salesforce, Shopify.",
+      "checked_url": "https://stripe.com",
+      "page_was_reachable": true,
+      "notes": ""
+    },
+    {
+      "insight_id": "market-2",
+      "verdict": "verified",
+      "evidence_quote": "Stripe today announced the acquisition of Bridge, the leading stablecoin platform.",
+      "checked_url": "https://stripe.com/newsroom/news/acquired-bridge",
+      "page_was_reachable": true,
+      "notes": ""
+    },
+    {
+      "insight_id": "rd-1",
+      "verdict": "inferred",
+      "evidence_quote": "Engineering blog index page lists posts; the specific 'Ruby at scale' framing is paraphrased from multiple posts about Rails and Sorbet.",
+      "checked_url": "https://stripe.com/blog/engineering",
+      "page_was_reachable": true,
+      "notes": "The exact post title in the headline may be loose paraphrase; the underlying claim about Rails+Sorbet is well-supported."
+    }
+  ],
+  "dead_sources": [],
+  "numerical_contradictions": [
+    {
+      "fact_a": {"value": "headcount ~8000", "domain": "people"},
+      "fact_b": {"value": "headcount ~8500", "domain": "money"},
+      "magnitude": "1.06x discrepancy — within disagreement_threshold of 20%"
+    }
+  ],
+  "summary": {
+    "verified_count": 3,
+    "inferred_count": 2,
+    "not_supported_count": 0,
+    "dead_source_count": 0
+  }
+}
