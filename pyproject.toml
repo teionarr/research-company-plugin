@@ -9,7 +9,7 @@ authors = [{ name = "Oren Levitin" }]
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0,<10",
-    "ruff==0.6.9",
+    "ruff==0.15.12",
 ]
 
 # This plugin is not a python package — it's a directory of agent files,

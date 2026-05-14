@@ -294,7 +294,7 @@ def render_top_5_section(top_5: list[Insight]) -> str:
     if not top_5:
         return '<section class="top-5 empty"><h2>Top 5</h2><p>No insights selected.</p></section>'
     items = "".join(render_insight(i, open_by_default=True) for i in top_5)
-    return f'<section class="top-5">' f"<h2>Top 5 to use in your interview</h2>" f"{items}" f"</section>"
+    return f'<section class="top-5"><h2>Top 5 to use in your interview</h2>{items}</section>'
 
 
 def render_verification_summary(summary: dict[str, int]) -> str:
@@ -315,7 +315,7 @@ def render_contradictions_footer(items: list[Insight]) -> str:
     if not items:
         return ""
     body = "".join(render_insight(i) for i in items)
-    return f'<footer class="contradictions">' f"<h2>🔀 Cross-domain contradictions</h2>" f"{body}" f"</footer>"
+    return f'<footer class="contradictions"><h2>🔀 Cross-domain contradictions</h2>{body}</footer>'
 
 
 CSS = """
