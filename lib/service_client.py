@@ -157,6 +157,32 @@ class ServiceClient:
             return url if isinstance(url, str) else None
         return None
 
+    def verify(
+        self,
+        insights: list[dict[str, Any]],
+        *,
+        target_domain: str | None = None,
+        skip_url_check: bool = False,
+    ) -> dict[str, Any] | None:
+        """Run the kitchen's deterministic checks against a list of insights.
+
+        Returns the VerificationReport dict (verifications + cross_domain_contradictions
+        + summary) or None if the kitchen is unreachable. Never raises to the caller.
+
+        Not cached — verification results depend on the exact insight payload AND on
+        URL liveness, which can change minute-to-minute.
+        """
+        return self._post(
+            "/verify",
+            payload={
+                "insights": insights,
+                "target_domain": target_domain,
+                "skip_url_check": skip_url_check,
+            },
+            cache_namespace=None,  # never cache; depends on URL liveness which changes
+            cache_ttl_kind="fact",
+        )
+
     # ---- Internals ----
 
     def _post(
