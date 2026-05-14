@@ -23,6 +23,9 @@
 #   - sec_edgar           (always available — public API, no key)
 #   - opencorporates      (requires OPENCORPORATES_API_KEY for higher rate limits;
 #                          works without key for personal-use rate limit)
+#   - kitchen             (added when RESEARCH_SERVICE_URL is reachable; when present,
+#                          domain experts prefer `python lib/kitchen_cli.py <cmd>` over
+#                          direct MCP/web tools — kitchen calls are cached + cost-tracked)
 
 set -euo pipefail
 
@@ -66,11 +69,14 @@ if command -v wappalyzer >/dev/null 2>&1 || command -v wappybird >/dev/null 2>&1
     available+=("wappalyzer_oss")
 fi
 
-# Service backend reachability (the kitchen)
+# Service backend reachability (the kitchen). When reachable, we add the literal
+# `kitchen` token to AVAILABLE_TOOLS so domain experts know to prefer kitchen calls
+# (which are cached + cost-tracked) over direct MCP/web tools.
 if [[ -n "${RESEARCH_SERVICE_URL:-}" ]]; then
     if curl --silent --max-time 2 --fail "${RESEARCH_SERVICE_URL}/health" >/dev/null 2>&1; then
         emit RESEARCH_SERVICE_REACHABLE "true"
         emit RESEARCH_SERVICE_URL "${RESEARCH_SERVICE_URL}"
+        available+=("kitchen")
     else
         emit RESEARCH_SERVICE_REACHABLE "false"
         note "RESEARCH_SERVICE_URL set but /health unreachable — falling back to direct MCP/API calls"
